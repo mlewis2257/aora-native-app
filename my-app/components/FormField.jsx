@@ -1,7 +1,6 @@
 import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
 import { useState } from "react";
 import React from "react";
-import CustomButton from "./CustomButton";
 import { icons } from "../constants";
 
 const FormField = ({
