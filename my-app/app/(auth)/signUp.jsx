@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Image, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { images } from "../../constants";
 import { createUser } from "../../lib/appwrite";
@@ -21,8 +21,11 @@ const signUp = () => {
     }
     setIsSubmitted(true);
     try {
-      await createUser(form.email, form.password, form.username);
+      const result = await createUser(form.email, form.password, form.username);
       // set the user to global state...
+      setUser(result);
+      setIsLoggedIn(true);
+      Alert.alert("Success", "User created successfully");
       router.replace("/home");
     } catch (error) {
       Alert.alert("Error", error.message);

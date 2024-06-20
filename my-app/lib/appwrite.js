@@ -1,4 +1,11 @@
-import { Client, Account, ID, Avatars, Databases } from "react-native-appwrite";
+import {
+  Client,
+  Account,
+  ID,
+  Avatars,
+  Databases,
+  Query,
+} from "react-native-appwrite";
 
 export const appwriteConfig = {
   endpoint: "https://cloud.appwrite.io/v1",
@@ -67,22 +74,105 @@ export const getCurrentSession = async () => {
   }
 };
 
-export async function sign_In(email, password) {
+// Get current user
+export const getCurrentUser = async () => {
   try {
-    const currentSession = await getCurrentSession();
-    if (currentSession) {
-      console.log("Already signed in");
-      await account.deleteSession(currentSession.$id);
-      return currentSession;
-    }
+    const currentAccount = await account.get();
 
+    if (!currentAccount) throw Error;
+
+    const currentUser = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.usersCollectionId,
+      [
+        Query.equal("accountId", currentAccount.$id),
+        Query.equal("email", currentAccount.email),
+      ]
+    );
+    if (currentUser.total === 0) throw Error("User not found");
+    if (!currentUser) throw Error;
+    return currentUser.documents[0];
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
+export const sign_In = async (email, password) => {
+  try {
     const session = await account.createEmailPasswordSession(email, password);
     return session;
   } catch (error) {
     console.log(error);
     throw new Error(error);
   }
-}
+};
+
+export const getAllPosts = async () => {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.videosId
+    );
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
+export const getLatestPosts = async () => {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.videosId,
+      [Query.orderDesc("$createdAt"), Query.limit(7)]
+    );
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
+export const searchPosts = async (query) => {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.videosId,
+      [Query.search("title", query) || Query.search("description", query)]
+    );
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+export const getUserPosts = async (userId) => {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.videosId,
+      [Query.equal("creator", userId)]
+    );
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
+
+// export async function sign_Out() {
+//   try {
+//     const currentSession = await getCurrentSession();
+//     if (currentSession) {
+//       await account.deleteSession(currentSession.$id);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     throw new Error(error);
+//   }
+// }
 
 // import Appwrite
 

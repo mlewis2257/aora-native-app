@@ -5,6 +5,7 @@ import { useState } from "react";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
+import { getCurrentUser } from "../../lib/appwrite";
 import React from "react";
 import { sign_In } from "../../lib/appwrite";
 
@@ -21,7 +22,11 @@ const signIn = () => {
     setIsSubmitted(true);
     try {
       await sign_In(form.email, form.password);
+      const user = await getCurrentUser();
+      setUser(user);
+      setIsLoggedIn(true);
       // set the user to global state...
+      Alert.alert("Success", "Logged in successfully");
       router.replace("/home");
     } catch (error) {
       Alert.alert("Error", error.message);
