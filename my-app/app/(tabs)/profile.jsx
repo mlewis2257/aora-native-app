@@ -1,5 +1,6 @@
 import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import EmptyState from "../../components/EmptyState";
 import VideoCard from "../../components/VideoCard";
@@ -69,6 +70,7 @@ const Profile = () => {
           />
         )}
       />
+      <StatusBar backgroundColor="#161622" style="light" />
     </SafeAreaView>
   );
 };

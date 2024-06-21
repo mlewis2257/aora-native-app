@@ -6,6 +6,7 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
@@ -75,6 +76,7 @@ const home = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
+      <StatusBar backgroundColor="#16162280" style="light" />
     </SafeAreaView>
   );
 };
