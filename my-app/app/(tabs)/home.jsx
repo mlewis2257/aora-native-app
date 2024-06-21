@@ -15,10 +15,12 @@ import EmptyState from "../../components/EmptyState";
 import VideoCard from "../../components/VideoCard";
 import { getAllPosts, getLatestPosts } from "../../lib/appwrite";
 import useAppwrite from "../../lib/useAppWrite";
+import { useGlobalContext } from "../../context/GlobalState";
 
 const home = () => {
   const { data: posts, refetchData } = useAppwrite(getAllPosts);
   const { data: latestPosts } = useAppwrite(getLatestPosts);
+  const { user, setUser, setIsLoggedIn } = useGlobalContext();
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
@@ -33,10 +35,7 @@ const home = () => {
       <FlatList
         data={posts}
         keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <VideoCard video={item} />
-          // <Text>{item.id}</Text>
-        )}
+        renderItem={({ item }) => <VideoCard video={item} />}
         ListHeaderComponent={() => (
           <View className="my-6 px-4 space-y-6">
             <View className="justify-between items-start flex-row mb-6">
@@ -44,7 +43,9 @@ const home = () => {
                 <Text className="font-pmedium text-sm text-gray-100">
                   Welcome Back,
                 </Text>
-                <Text className="text-2xl font-psemibold text-white">John</Text>
+                <Text className="text-2xl font-psemibold text-white">
+                  {user?.username}
+                </Text>
               </View>
               <View className="mt-1">
                 <Image

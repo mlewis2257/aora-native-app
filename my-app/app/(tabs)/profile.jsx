@@ -1,11 +1,5 @@
-import {
-  View,
-  Text,
-  FlatList,
-  SafeAreaView,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import EmptyState from "../../components/EmptyState";
 import VideoCard from "../../components/VideoCard";
@@ -14,11 +8,18 @@ import useAppwrite from "../../lib/useAppWrite";
 import { useGlobalContext } from "../../context/GlobalState";
 import { icons } from "../../constants";
 import InfoBox from "../../components/InfoBox";
+import { router } from "expo-router";
+import { signOut } from "../../lib/appwrite";
 
 const Profile = () => {
   const { user, setUser, setIsLoggedIn } = useGlobalContext();
   const { data: posts } = useAppwrite(() => getUserPosts(user.$id));
-  const logout = () => {};
+  const logout = async () => {
+    await signOut();
+    setUser(null);
+    setIsLoggedIn(false);
+    router.replace("/signIn");
+  };
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -28,12 +29,11 @@ const Profile = () => {
         renderItem={({ item }) => <VideoCard video={item} />}
         ListHeaderComponent={() => (
           <View className="w-full justify-center items-center mt-6 mb-12 px-4">
-            <TouchableOpacity className="w-full items-end mb-10">
-              <Image
-                source={icons.logout}
-                className="w-6 h-6"
-                onPress={logout}
-              />
+            <TouchableOpacity
+              className="w-full items-end mb-10"
+              onPress={logout}
+            >
+              <Image source={icons.logout} className="w-6 h-6" />
             </TouchableOpacity>
             <View className="w-16 h-16 border border-secondary rounded-lg justify-center items-center">
               <Image

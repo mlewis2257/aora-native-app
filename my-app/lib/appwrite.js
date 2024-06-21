@@ -5,6 +5,7 @@ import {
   Avatars,
   Databases,
   Query,
+  Storage,
 } from "react-native-appwrite";
 
 export const appwriteConfig = {
@@ -29,6 +30,7 @@ client
 const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
+const storage = new Storage(client);
 
 // Register User
 export const createUser = async (email, password, username) => {
@@ -112,7 +114,8 @@ export const getAllPosts = async () => {
   try {
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.videosId
+      appwriteConfig.videosId,
+      [Query.orderDesc("$createdAt")]
     );
     return posts.documents;
   } catch (error) {
@@ -153,7 +156,7 @@ export const getUserPosts = async (userId) => {
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.videosId,
-      [Query.equal("creator", userId)]
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
     );
     return posts.documents;
   } catch (error) {
@@ -162,17 +165,83 @@ export const getUserPosts = async (userId) => {
   }
 };
 
-// export async function sign_Out() {
-//   try {
-//     const currentSession = await getCurrentSession();
-//     if (currentSession) {
-//       await account.deleteSession(currentSession.$id);
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     throw new Error(error);
-//   }
-// }
+export async function signOut() {
+  try {
+    const session = await account.deleteSession("current");
+    return session;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function getFilePreview(fileId, type) {
+  let fileUrl;
+  try {
+    if (type === "video") {
+      fileUrl = storage.getFileView(appwriteConfig.storageId, fileId);
+    } else if (type === "image") {
+      fileUrl = storage.getFilePreview(
+        appwriteConfig.storageId,
+        fileId,
+        2000,
+        2000,
+        "top",
+        100
+      );
+    } else {
+      throw new Error("File type not supported");
+    }
+    if (!fileUrl) throw new Error("File not found");
+    return fileUrl;
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
+export async function uploadFile(file, type) {
+  if (!file) return;
+  const { mineType, ...rest } = file;
+  const asset = {
+    name: file.name,
+    type: file.mineType,
+    size: file.fileSize,
+    uri: file.uri,
+  };
+  try {
+    const uploadedFile = await storage.createFile(
+      appwriteConfig.storageId,
+      ID.unique(),
+      asset
+    );
+    const fileUrl = await getFilePreview(uploadedFile.$id, type);
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
+export async function createVideo(form) {
+  try {
+    const [thumbnailUrl, videoUrl] = await Promise.all([
+      uploadFile(form.thumbnail, "image"),
+      uploadFile(form.video, "video"),
+    ]);
+    const newPost = databases.createDocument({
+      databaseId: appwriteConfig.databaseId,
+      collectionId: appwriteConfig.videosId,
+      documentId: ID.unique(),
+      data: {
+        title: form.title,
+        prompt: form.prompt,
+        thumbnail: thumbnailUrl,
+        video: videoUrl,
+        creator: form.userId,
+      },
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+}
 
 // import Appwrite
 

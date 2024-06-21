@@ -4,11 +4,13 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import { images } from "../../constants";
 import { createUser } from "../../lib/appwrite";
+import { useGlobalContext } from "../../context/GlobalState";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import React from "react";
 
 const signUp = () => {
+  const { setUser, setIsLoggedIn } = useGlobalContext();
   const [form, setForm] = useState({
     username: "",
     email: "",

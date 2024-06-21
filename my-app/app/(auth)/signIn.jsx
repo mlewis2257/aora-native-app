@@ -8,8 +8,10 @@ import CustomButton from "../../components/CustomButton";
 import { getCurrentUser } from "../../lib/appwrite";
 import React from "react";
 import { sign_In } from "../../lib/appwrite";
+import { useGlobalContext } from "../../context/GlobalState";
 
 const signIn = () => {
+  const { setUser, setIsLoggedIn } = useGlobalContext();
   const [form, setForm] = useState({
     email: "",
     password: "",
